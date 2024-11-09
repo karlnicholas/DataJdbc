@@ -1,7 +1,5 @@
--- V2__initial_data.sql
-
--- Initial Sort data
-INSERT INTO SORT (SORT, DESCRIPTION) VALUES
+-- Initial data for SORT table
+INSERT INTO SORT (sort, description) VALUES
                                          ('S', 'Sunrise'),
                                          ('D', 'Day'),
                                          ('L', 'Local'),
@@ -10,32 +8,41 @@ INSERT INTO SORT (SORT, DESCRIPTION) VALUES
                                          ('P', 'Preload'),
                                          ('-', 'No Sort');
 
--- Initial Slic data
-INSERT INTO SLIC (SLIC, DESCRIPTION) VALUES
+-- Initial data for SLIC table
+INSERT INTO SLIC (slic, description) VALUES
                                          ('9449 ', 'PHXAZ'),
                                          ('0871 ', 'LAKNJ'),
                                          ('3039 ', 'ATLGA');
 
--- Initial Country data
-INSERT INTO COUNTRY (CC, DESCRIPTION) VALUES
+-- Initial data for COUNTRY table
+INSERT INTO COUNTRY (cc, description) VALUES
                                           ('US', 'United States'),
                                           ('CA', 'Canada'),
                                           ('PR', 'Puerto Rico'),
                                           ('MX', 'Mexico');
 
--- Initial FlowNode data with composite unique key on countryId, slicId, and sortId
+-- Insert initial data into FLOWNODE table without a description field
+
+-- First entry
 INSERT INTO FLOWNODE (countryId, slicId, sortId)
-SELECT
-    (SELECT id FROM COUNTRY WHERE code = 'US'),
-    (SELECT id FROM SLIC WHERE code = '9449'),
-    (SELECT id FROM SORT WHERE code = 'L')
-UNION ALL
-SELECT
-    (SELECT id FROM COUNTRY WHERE code = 'US'),
-    (SELECT id FROM SLIC WHERE code = '0871'),
-    (SELECT id FROM SORT WHERE code = 'L')
-UNION ALL
-SELECT
-    (SELECT id FROM COUNTRY WHERE code = 'US'),
-    (SELECT id FROM SLIC WHERE code = '3039'),
-    (SELECT id FROM SORT WHERE code = 'T');
+VALUES (
+           (SELECT id FROM COUNTRY WHERE cc = 'US'),
+           (SELECT id FROM SLIC WHERE slic = '0871 '),
+           (SELECT id FROM SORT WHERE sort = 'L')
+       );
+
+-- Second entry
+INSERT INTO FLOWNODE (countryId, slicId, sortId)
+VALUES (
+           (SELECT id FROM COUNTRY WHERE cc = 'US'),
+           (SELECT id FROM SLIC WHERE slic = '9449 '),
+           (SELECT id FROM SORT WHERE sort = 'L')
+       );
+
+-- Third entry
+INSERT INTO FLOWNODE (countryId, slicId, sortId)
+VALUES (
+           (SELECT id FROM COUNTRY WHERE cc = 'US'),
+           (SELECT id FROM SLIC WHERE slic = '3039 '),
+           (SELECT id FROM SORT WHERE sort = 'T')
+       );

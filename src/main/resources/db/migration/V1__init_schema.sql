@@ -1,42 +1,42 @@
--- V1__Init_Schema.sql
-
--- Create COUNTRY table
+-- COUNTRY table creation
 CREATE TABLE COUNTRY (
-                         id BIGINT IDENTITY(1,1) PRIMARY KEY,
-                         code CHAR(2) NOT NULL UNIQUE
+                         id BIGINT IDENTITY PRIMARY KEY,
+                         cc CHAR(2) NOT NULL,           -- 2-character country code
+                         description NVARCHAR(255)      -- Country description
 );
 
--- Create SLIC table
+-- SLIC table creation
 CREATE TABLE SLIC (
-                      id BIGINT IDENTITY(1,1) PRIMARY KEY,
-                      code CHAR(5) NOT NULL UNIQUE
+                      id BIGINT IDENTITY PRIMARY KEY,
+                      slic CHAR(5) NOT NULL,         -- 5-character Slic code
+                      description NVARCHAR(255)      -- Slic description
 );
 
--- Create SORT table
+-- SORT table creation
 CREATE TABLE SORT (
-                      id BIGINT IDENTITY(1,1) PRIMARY KEY,
-                      code CHAR(1) NOT NULL UNIQUE
+                      id BIGINT IDENTITY PRIMARY KEY,
+                      sort CHAR(1) NOT NULL,         -- 1-character Sort code
+                      description NVARCHAR(255)      -- Sort description
 );
 
--- Create FLOWNODE table
+-- FLOWNODE table creation
 CREATE TABLE FLOWNODE (
-                          id BIGINT IDENTITY(1,1) PRIMARY KEY,
-                          countryId BIGINT NOT NULL,
-                          slicId BIGINT NOT NULL,
-                          sortId BIGINT NOT NULL,
-                          CONSTRAINT FK_FLOWNODE_COUNTRY FOREIGN KEY (countryId) REFERENCES COUNTRY(id),
-                          CONSTRAINT FK_FLOWNODE_SLIC FOREIGN KEY (slicId) REFERENCES SLIC(id),
-                          CONSTRAINT FK_FLOWNODE_SORT FOREIGN KEY (sortId) REFERENCES SORT(id),
-                          CONSTRAINT UQ_FlowNode_country_slic_sort UNIQUE (countryId, slicId, sortId)
+                          id BIGINT IDENTITY PRIMARY KEY,                -- Primary key for FlowNode
+                          countryId BIGINT NOT NULL,                     -- Reference to Country primary key
+                          slicId BIGINT NOT NULL,                        -- Reference to Slic primary key
+                          sortId BIGINT NOT NULL,                        -- Reference to Sort primary key
+                          FOREIGN KEY (countryId) REFERENCES COUNTRY(id),
+                          FOREIGN KEY (slicId) REFERENCES SLIC(id),
+                          FOREIGN KEY (sortId) REFERENCES SORT(id)
 );
 
--- Create BAGDEFINITION table
+-- BAGDEFINITION table creation
 CREATE TABLE BAGDEFINITION (
-                               id BIGINT IDENTITY(1,1) PRIMARY KEY,
-                               origin_id BIGINT NOT NULL, -- Foreign key reference to FlowNode
-                               destination_id BIGINT NOT NULL, -- Foreign key reference to FlowNode
-                               start_date DATE NOT NULL,
-                               end_date DATE NOT NULL,
-                               CONSTRAINT FK_BAGDEFINITION_ORIGIN FOREIGN KEY (origin_id) REFERENCES FLOWNODE(id),
-                               CONSTRAINT FK_BAGDEFINITION_DESTINATION FOREIGN KEY (destination_id) REFERENCES FLOWNODE(id)
+                               id BIGINT IDENTITY PRIMARY KEY,                -- Primary key for BagDefinition
+                               originId BIGINT NOT NULL,                      -- Reference to FlowNode ID for origin
+                               destinationId BIGINT NOT NULL,                 -- Reference to FlowNode ID for destination
+                               startDate DATE NOT NULL,
+                               endDate DATE NOT NULL,
+                               FOREIGN KEY (originId) REFERENCES FLOWNODE(id),
+                               FOREIGN KEY (destinationId) REFERENCES FLOWNODE(id)
 );

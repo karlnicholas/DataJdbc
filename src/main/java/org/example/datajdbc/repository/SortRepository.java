@@ -5,5 +5,5 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.Optional;
 
 public interface SortRepository extends CrudRepository<Sort, Long> {
-    Optional<Sort> findByCode(String code);
+    Optional<Sort> findBySort(String sort);
 }

@@ -23,7 +23,7 @@ public class BagDefinitionViewRepositoryImpl implements BagDefinitionViewReposit
 
     @Override
     public List<BagDefinitionView> findByOriginAndDateRange(String originCc, String originSlic, String originSort, LocalDate startDate, LocalDate endDate) {
-        String sql = "SELECT * FROM vw_BagDefinitionDetails " +
+        String sql = "SELECT * FROM BagDefinitionView " +
                 "WHERE originCc = ? AND originSlic = ? AND originSort = ? " +
                 "AND startDate >= ? AND endDate <= ?";
 
