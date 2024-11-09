@@ -12,14 +12,10 @@ import java.util.List;
 @Service
 public class ApiService {
 
-    private final BagDefinitionRepository bagDefinitionRepository;
-    private final FlowNodeService flowNodeService;
     private final BagDefinitionViewRepository bagDefinitionViewRepository;
 
     @Autowired
     public ApiService(BagDefinitionRepository bagDefinitionRepository, FlowNodeService flowNodeService, BagDefinitionViewRepository bagDefinitionViewRepository) {
-        this.bagDefinitionRepository = bagDefinitionRepository;
-        this.flowNodeService = flowNodeService;
         this.bagDefinitionViewRepository = bagDefinitionViewRepository;
     }
 

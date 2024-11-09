@@ -4,9 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.example.datajdbc.domain.FlowNode;
 import org.example.datajdbc.repository.FlowNodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

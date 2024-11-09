@@ -27,7 +27,7 @@ public class BagDefinitionViewRepositoryImpl implements BagDefinitionViewReposit
                 "WHERE originCc = ? AND originSlic = ? AND originSort = ? " +
                 "AND startDate >= ? AND endDate <= ?";
 
-        return jdbcTemplate.query(sql, new Object[]{originCc, originSlic, originSort, startDate, endDate}, new BagDefinitionViewRowMapper());
+        return jdbcTemplate.query(sql, new BagDefinitionViewRowMapper(), originCc, originSlic, originSort, startDate, endDate);
     }
 
     private static class BagDefinitionViewRowMapper implements RowMapper<BagDefinitionView> {
