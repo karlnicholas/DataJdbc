@@ -1,21 +1,15 @@
 package org.example.datajdbc.domain;
 
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
 
-@Table("FLOWNODE")
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(exclude = {"id"})
 public class FlowNode {
-    @Id
-    private Long id;
-    private String cc; // char(2)
-    private String slic; // char(5)
-    private String sort;  // char(1)
-
+    private Long id; // Primary key for FlowNode
+    private Long countryId; // Reference to Country primary key
+    private Long slicId;    // Reference to Slic primary key
+    private Long sortId;    // Reference to Sort primary key
 }

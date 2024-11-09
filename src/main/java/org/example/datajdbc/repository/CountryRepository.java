@@ -1,8 +1,9 @@
 package org.example.datajdbc.repository;
 
 import org.example.datajdbc.domain.Country;
-import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.data.repository.CrudRepository;
+import java.util.Optional;
 
-public interface CountryRepository extends ListCrudRepository<Country, Long> {
-    // Additional query methods can be defined here if needed
+public interface CountryRepository extends CrudRepository<Country, Long> {
+    Optional<Country> findByCode(String code);
 }

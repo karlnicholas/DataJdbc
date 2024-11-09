@@ -23,8 +23,19 @@ INSERT INTO COUNTRY (CC, DESCRIPTION) VALUES
                                           ('PR', 'Puerto Rico'),
                                           ('MX', 'Mexico');
 
--- Initial FlowNode data with composite unique key on cc, slic, and sort
-INSERT INTO FLOWNODE (CC, SLIC, SORT) VALUES
-                                          ('US', '9449 ', 'L'),
-                                          ('US', '0871 ', 'L'),
-                                          ('US', '3039 ', 'T');
+-- Initial FlowNode data with composite unique key on countryId, slicId, and sortId
+INSERT INTO FLOWNODE (countryId, slicId, sortId)
+SELECT
+    (SELECT id FROM COUNTRY WHERE code = 'US'),
+    (SELECT id FROM SLIC WHERE code = '9449'),
+    (SELECT id FROM SORT WHERE code = 'L')
+UNION ALL
+SELECT
+    (SELECT id FROM COUNTRY WHERE code = 'US'),
+    (SELECT id FROM SLIC WHERE code = '0871'),
+    (SELECT id FROM SORT WHERE code = 'L')
+UNION ALL
+SELECT
+    (SELECT id FROM COUNTRY WHERE code = 'US'),
+    (SELECT id FROM SLIC WHERE code = '3039'),
+    (SELECT id FROM SORT WHERE code = 'T');
