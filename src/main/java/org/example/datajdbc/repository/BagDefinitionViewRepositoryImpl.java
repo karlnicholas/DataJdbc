@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class BagDefinitionViewRepositoryImpl implements BagDefinitionViewRepository {
@@ -22,11 +23,23 @@ public class BagDefinitionViewRepositoryImpl implements BagDefinitionViewReposit
     }
 
     @Override
+    public List<BagDefinitionView> findAll() {
+        String sql = "SELECT * FROM BagDefinitionView";
+        return jdbcTemplate.query(sql, new BagDefinitionViewRowMapper());
+    }
+
+    @Override
+    public Optional<BagDefinitionView> findById(Long id) {
+        String sql = "SELECT * FROM BagDefinitionView WHERE bagDefinitionId = ?";
+        List<BagDefinitionView> results = jdbcTemplate.query(sql, new BagDefinitionViewRowMapper(), id);
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
+
+    @Override
     public List<BagDefinitionView> findByOriginAndDateRange(String originCc, String originSlic, String originSort, LocalDate startDate, LocalDate endDate) {
         String sql = "SELECT * FROM BagDefinitionView " +
                 "WHERE originCc = ? AND originSlic = ? AND originSort = ? " +
                 "AND startDate >= ? AND endDate <= ?";
-
         return jdbcTemplate.query(sql, new BagDefinitionViewRowMapper(), originCc, originSlic, originSort, startDate, endDate);
     }
 

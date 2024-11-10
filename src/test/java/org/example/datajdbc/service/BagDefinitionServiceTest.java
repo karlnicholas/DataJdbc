@@ -7,6 +7,7 @@ import org.example.datajdbc.repository.BagDefinitionRepository;
 import org.example.datajdbc.repository.BagDefinitionViewRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -14,12 +15,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ApiServiceTest {
+class BagDefinitionServiceTest {
 
     @Mock
     private BagDefinitionViewRepository bagDefinitionViewRepository;
@@ -31,7 +34,7 @@ class ApiServiceTest {
     private FlowNodeService flowNodeService;
 
     @InjectMocks
-    private ApiService apiService;
+    private BagDefinitionService bagDefinitionService;
 
     @Test
     void testGetBagDefinitionsForOriginAndDateRange() {
@@ -53,19 +56,14 @@ class ApiServiceTest {
                 .thenReturn(Collections.singletonList(bagDefinitionView));
 
         // Act
-        List<BagDefinitionView> result = apiService.getBagDefinitionsForOriginAndDateRange(
+        List<BagDefinitionView> result = bagDefinitionService.getBagDefinitionsForOriginAndDateRange(
                 originCc, originSlic, originSort, startDate, endDate
         );
 
         // Assert
         assertThat(result).isNotNull();
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getOriginCc()).isEqualTo(originCc);
-        assertThat(result.get(0).getOriginSlic()).isEqualTo(originSlic);
-        assertThat(result.get(0).getOriginSort()).isEqualTo(originSort);
-        assertThat(result.get(0).getDestinationCc()).isEqualTo("US");
-        assertThat(result.get(0).getDestinationSlic()).isEqualTo("9449");
-        assertThat(result.get(0).getDestinationSort()).isEqualTo("L");
+        assertThat(result.get(0)).isEqualTo(bagDefinitionView);
     }
 
     @Test
@@ -83,19 +81,28 @@ class ApiServiceTest {
         FlowNode originFlowNode = new FlowNode(1L, null, null, null);
         FlowNode destinationFlowNode = new FlowNode(2L, null, null, null);
 
-        BagDefinition bagDefinition = BagDefinition.builder()
-                .originId(originFlowNode.getId())
-                .destinationId(destinationFlowNode.getId())
-                .startDate(startDate)
-                .endDate(endDate)
-                .build();
+        // Define expected BagDefinitionView
+        BagDefinitionView bagDefinitionView = new BagDefinitionView(
+                1L, startDate, endDate,
+                originCc, originSlic, originSort,
+                destinationCc, destinationSlic, destinationSort
+        );
 
+        // Stubbing mocks for FlowNodeService
         when(flowNodeService.getOrCreateFlowNode(originCc, originSlic, originSort)).thenReturn(originFlowNode);
         when(flowNodeService.getOrCreateFlowNode(destinationCc, destinationSlic, destinationSort)).thenReturn(destinationFlowNode);
-        when(bagDefinitionRepository.save(any(BagDefinition.class))).thenReturn(bagDefinition);
+        when(bagDefinitionViewRepository.findById(1L)).thenReturn(Optional.of(bagDefinitionView));
+
+        // Capture the BagDefinition passed to save() and set an ID manually
+        ArgumentCaptor<BagDefinition> bagDefinitionCaptor = ArgumentCaptor.forClass(BagDefinition.class);
+        when(bagDefinitionRepository.save(bagDefinitionCaptor.capture())).thenAnswer(invocation -> {
+            BagDefinition savedBagDefinition = bagDefinitionCaptor.getValue();
+            savedBagDefinition.setId(1L);  // Simulate ID assignment
+            return savedBagDefinition;
+        });
 
         // Act
-        BagDefinition result = apiService.createBagDefinition(
+        BagDefinitionView result = bagDefinitionService.createBagDefinition(
                 originCc, originSlic, originSort,
                 destinationCc, destinationSlic, destinationSort,
                 startDate, endDate
@@ -103,13 +110,12 @@ class ApiServiceTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getOriginId()).isEqualTo(originFlowNode.getId());
-        assertThat(result.getDestinationId()).isEqualTo(destinationFlowNode.getId());
-        assertThat(result.getStartDate()).isEqualTo(startDate);
-        assertThat(result.getEndDate()).isEqualTo(endDate);
+        assertThat(result).isEqualTo(bagDefinitionView);
 
+        // Verify interactions
         verify(flowNodeService, times(1)).getOrCreateFlowNode(originCc, originSlic, originSort);
         verify(flowNodeService, times(1)).getOrCreateFlowNode(destinationCc, destinationSlic, destinationSort);
-        verify(bagDefinitionRepository, times(1)).save(any(BagDefinition.class));
+        verify(bagDefinitionRepository, times(1)).save(bagDefinitionCaptor.getValue());
+        verify(bagDefinitionViewRepository, times(1)).findById(1L);
     }
 }
