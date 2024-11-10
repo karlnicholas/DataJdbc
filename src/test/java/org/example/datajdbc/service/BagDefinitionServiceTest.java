@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -103,9 +102,16 @@ class BagDefinitionServiceTest {
 
         // Act
         BagDefinitionView result = bagDefinitionService.createBagDefinition(
-                originCc, originSlic, originSort,
-                destinationCc, destinationSlic, destinationSort,
-                startDate, endDate
+                BagDefinitionView.builder()
+                        .originCc(originCc)
+                        .originSlic(originSlic)
+                        .originSort(originSort)
+                        .destinationCc(destinationCc)
+                        .destinationSlic(destinationSlic)
+                        .destinationSort(destinationSort)
+                        .startDate(startDate)
+                        .endDate(endDate)
+                        .build()
         );
 
         // Assert

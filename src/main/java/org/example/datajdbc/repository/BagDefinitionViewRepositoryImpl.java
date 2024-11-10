@@ -2,7 +2,6 @@ package org.example.datajdbc.repository;
 
 import org.example.datajdbc.domain.BagDefinitionView;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
