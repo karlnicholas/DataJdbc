@@ -50,12 +50,7 @@ public class BagDefinitionService {
                 bagDefinitionView.getDestinationSlic(),
                 bagDefinitionView.getDestinationSort());
 
-        var bagDefinition = BagDefinition.builder()
-                .originId(origin.getId())
-                .destinationId(destination.getId())
-                .startDate(bagDefinitionView.getStartDate())
-                .endDate(bagDefinitionView.getEndDate())
-                .build();
+        var bagDefinition = new BagDefinition(null, origin.getId(), destination.getId(), bagDefinitionView.getStartDate(), bagDefinitionView.getEndDate());
 
         bagDefinitionRepository.save(bagDefinition);
         // Find and return the newly created BagDefinitionView

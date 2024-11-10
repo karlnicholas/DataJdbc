@@ -1,6 +1,11 @@
 package org.example.datajdbc.service;
 
+import jakarta.annotation.PostConstruct;
+import org.apache.commons.lang3.StringUtils;
+import org.example.datajdbc.domain.Country;
 import org.example.datajdbc.domain.FlowNode;
+import org.example.datajdbc.domain.Slic;
+import org.example.datajdbc.domain.Sort;
 import org.example.datajdbc.repository.FlowNodeRepository;
 import org.example.datajdbc.repository.CountryRepository;
 import org.example.datajdbc.repository.SlicRepository;
@@ -32,6 +37,7 @@ public class FlowNodeService {
         this.sortRepository = sortRepository;
     }
 
+    @PostConstruct
     // Load all FlowNodes into the cache on startup
     public void initialize() {
         flowNodeRepository.findAll().forEach(this::addToCache);
@@ -39,9 +45,13 @@ public class FlowNodeService {
 
     // Adds a FlowNode to the cache with a "country:slic:sort" key
     private void addToCache(FlowNode flowNode) {
-        String key = generateCacheKey(flowNode.getCountryId(), flowNode.getSlicId(), flowNode.getSortId());
+        Country cc = countryRepository.findById(flowNode.getCountryId()).orElseThrow(() -> new IllegalArgumentException("Country not found"));
+        Slic slic = slicRepository.findById(flowNode.getSlicId()).orElseThrow(() -> new IllegalArgumentException("Slic not found"));
+        Sort sort = sortRepository.findById(flowNode.getSortId()).orElseThrow(() -> new IllegalArgumentException("Sort not found"));
+        String key = generateCacheKey(cc.getCc(), slic.getSlic(), sort.getSort());
         flowNodeCache.put(key, flowNode);
     }
+
 
     // Main method for retrieving or creating a FlowNode by "country", "slic", "sort" (String) values
     public FlowNode getOrCreateFlowNode(String country, String slic, String sort) {
@@ -62,7 +72,7 @@ public class FlowNodeService {
         flowNode = flowNodeRepository.save(flowNode);
 
         // Add the newly created FlowNode to the cache
-        flowNodeCache.put(key, flowNode);
+        addToCache(flowNode);
 
         log.warn("Created new FlowNode with key: {}", key);
 
@@ -71,12 +81,7 @@ public class FlowNodeService {
 
     // Generates a cache key from "country", "slic", and "sort" String values
     String generateCacheKey(String country, String slic, String sort) {
-        return country + ":" + slic + ":" + sort;
-    }
-
-    // Overloaded method to generate cache keys directly from IDs (for initial cache loading)
-    String generateCacheKey(Long countryId, Long slicId, Long sortId) {
-        return countryId + ":" + slicId + ":" + sortId;
+        return country + ":" + StringUtils.rightPad(StringUtils.trim(slic), 5) + ":" + sort;
     }
 
     public Map<String, FlowNode> getFlowNodeCache() {
