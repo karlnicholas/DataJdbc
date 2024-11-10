@@ -42,17 +42,19 @@ public class BagDefinitionService {
         return bagDefinitionViewRepository.findById(id);
     }
 
-    public BagDefinitionView createBagDefinition(String originCc, String originSlic, String originSort,
-                                                 String destinationCc, String destinationSlic, String destinationSort,
-                                                 LocalDate startDate, LocalDate endDate) {
-        FlowNode origin = flowNodeService.getOrCreateFlowNode(originCc, originSlic, originSort);
-        FlowNode destination = flowNodeService.getOrCreateFlowNode(destinationCc, destinationSlic, destinationSort);
+    public BagDefinitionView createBagDefinition(BagDefinitionView bagDefinitionView) {
+        FlowNode origin = flowNodeService.getOrCreateFlowNode(bagDefinitionView.getOriginCc(),
+                bagDefinitionView.getOriginSlic(),
+                bagDefinitionView.getOriginSort());
+        FlowNode destination = flowNodeService.getOrCreateFlowNode(bagDefinitionView.getDestinationCc(),
+                bagDefinitionView.getDestinationSlic(),
+                bagDefinitionView.getDestinationSort());
 
         var bagDefinition = BagDefinition.builder()
                 .originId(origin.getId())
                 .destinationId(destination.getId())
-                .startDate(startDate)
-                .endDate(endDate)
+                .startDate(bagDefinitionView.getStartDate())
+                .endDate(bagDefinitionView.getEndDate())
                 .build();
 
         bagDefinitionRepository.save(bagDefinition);
@@ -61,25 +63,28 @@ public class BagDefinitionService {
                 .orElseThrow(() -> new IllegalStateException("BagDefinitionView could not be created"));
     }
 
-    public Optional<BagDefinitionView> updateBagDefinition(Long id, String originCc, String originSlic, String originSort,
-                                                           String destinationCc, String destinationSlic, String destinationSort,
-                                                           LocalDate startDate, LocalDate endDate) {
-        Optional<BagDefinition> optionalBagDefinition = bagDefinitionRepository.findById(id);
+    public Optional<BagDefinitionView> updateBagDefinition(BagDefinitionView bagDefinitionView) {
+        Optional<BagDefinition> optionalBagDefinition = bagDefinitionRepository.findById(bagDefinitionView.getBagDefinitionId());
 
         if (optionalBagDefinition.isPresent()) {
             var existingBagDefinition = optionalBagDefinition.get();
 
-            FlowNode origin = flowNodeService.getOrCreateFlowNode(originCc, originSlic, originSort);
-            FlowNode destination = flowNodeService.getOrCreateFlowNode(destinationCc, destinationSlic, destinationSort);
+            FlowNode origin = flowNodeService.getOrCreateFlowNode(bagDefinitionView.getOriginCc(),
+                    bagDefinitionView.getOriginSlic(),
+                    bagDefinitionView.getOriginSort());
+            FlowNode destination = flowNodeService.getOrCreateFlowNode(bagDefinitionView.getDestinationCc(),
+                    bagDefinitionView.getDestinationSlic(),
+                    bagDefinitionView.getDestinationSort());
+
 
             existingBagDefinition.setOriginId(origin.getId());
             existingBagDefinition.setDestinationId(destination.getId());
-            existingBagDefinition.setStartDate(startDate);
-            existingBagDefinition.setEndDate(endDate);
+            existingBagDefinition.setStartDate(bagDefinitionView.getStartDate());
+            existingBagDefinition.setEndDate(bagDefinitionView.getEndDate());
 
             bagDefinitionRepository.save(existingBagDefinition);
             // Return the updated BagDefinitionView
-            return bagDefinitionViewRepository.findById(id);
+            return bagDefinitionViewRepository.findById(bagDefinitionView.getBagDefinitionId());
         } else {
             return Optional.empty();
         }

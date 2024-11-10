@@ -2,6 +2,7 @@ package org.example.datajdbc.repository;
 
 import org.example.datajdbc.domain.BagDefinitionView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -38,8 +39,10 @@ public class BagDefinitionViewRepositoryImpl implements BagDefinitionViewReposit
     @Override
     public List<BagDefinitionView> findByOriginAndDateRange(String originCc, String originSlic, String originSort, LocalDate startDate, LocalDate endDate) {
         String sql = "SELECT * FROM BagDefinitionView " +
-                "WHERE originCc = ? AND originSlic = ? AND originSort = ? " +
-                "AND startDate >= ? AND endDate <= ?";
+                "WHERE originCc = :originCc " +
+                "AND originSlic = :originSlic " +
+                "AND originSort = :originSort " +
+                "AND (startDate <= :endDate AND endDate >= :startDate)";
         return jdbcTemplate.query(sql, new BagDefinitionViewRowMapper(), originCc, originSlic, originSort, startDate, endDate);
     }
 
