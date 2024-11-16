@@ -42,14 +42,21 @@ class FlowNodeServiceTest {
     @Test
     void testInitializeCache() {
         // Arrange
-        FlowNode flowNode = new FlowNode(1L, 100L, 200L, 300L);
+        Long countryId = 100L;
+        Long slicId = 200L;
+        Long sortId = 300L;
+        Country countryEntity = new Country(countryId, "US", "United States");
+        Slic slicEntity = new Slic(slicId, "0871", "Origin SLIC");
+        Sort sortEntity = new Sort(sortId, "L", "Local");        FlowNode flowNode = new FlowNode(1L, 100L, 200L, 300L);
         when(flowNodeRepository.findAll()).thenReturn(Collections.singletonList(flowNode));
-
+        when(countryRepository.findById(countryId)).thenReturn(Optional.of(countryEntity));
+        when(slicRepository.findById(slicId)).thenReturn(Optional.of(slicEntity));
+        when(sortRepository.findById(sortId)).thenReturn(Optional.of(sortEntity));
         // Act
         flowNodeService.initialize();
 
         // Assert
-        String expectedKey = flowNodeService.generateCacheKey(flowNode.getCountryId(), flowNode.getSlicId(), flowNode.getSortId());
+        String expectedKey = flowNodeService.generateCacheKey(countryEntity.getCc(), slicEntity.getSlic(), sortEntity.getSort());
         assertThat(flowNodeService.getFlowNodeCache().containsKey(expectedKey)).isTrue();
         assertThat(flowNodeService.getFlowNodeCache().get(expectedKey)).isEqualTo(flowNode);
         verify(flowNodeRepository, times(1)).findAll();

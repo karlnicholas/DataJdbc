@@ -12,12 +12,12 @@ import java.time.LocalDate;
 @Builder
 public class BagDefinitionView {
     private Long bagDefinitionId;
-    private LocalDate startDate;
-    private LocalDate endDate;
     private String originCc;
     private String originSlic;
     private String originSort;
     private String destinationCc;
     private String destinationSlic;
     private String destinationSort;
+    private LocalDate startDate;
+    private LocalDate endDate;
 }

@@ -5,6 +5,7 @@ import org.example.datajdbc.domain.BagDefinitionView;
 import org.example.datajdbc.domain.FlowNode;
 import org.example.datajdbc.repository.BagDefinitionRepository;
 import org.example.datajdbc.repository.BagDefinitionViewRepository;
+import org.example.datajdbc.util.IBagDefinitionsForOriginAndDateRange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class BagDefinitionService {
+public class BagDefinitionService implements IBagDefinitionsForOriginAndDateRange {
 
     private final BagDefinitionRepository bagDefinitionRepository;
     private final FlowNodeService flowNodeService;
@@ -28,6 +29,7 @@ public class BagDefinitionService {
         this.bagDefinitionViewRepository = bagDefinitionViewRepository;
     }
 
+    @Override
     public List<BagDefinitionView> getBagDefinitionsForOriginAndDateRange(
             String originCc, String originSlic, String originSort,
             LocalDate startDate, LocalDate endDate) {
@@ -42,7 +44,7 @@ public class BagDefinitionService {
         return bagDefinitionViewRepository.findById(id);
     }
 
-    public BagDefinitionView createBagDefinition(BagDefinitionView bagDefinitionView) {
+    public Long createBagDefinition(BagDefinitionView bagDefinitionView) {
         FlowNode origin = flowNodeService.getOrCreateFlowNode(bagDefinitionView.getOriginCc(),
                 bagDefinitionView.getOriginSlic(),
                 bagDefinitionView.getOriginSort());
@@ -52,13 +54,13 @@ public class BagDefinitionService {
 
         var bagDefinition = new BagDefinition(null, origin.getId(), destination.getId(), bagDefinitionView.getStartDate(), bagDefinitionView.getEndDate());
 
-        bagDefinitionRepository.save(bagDefinition);
+        return bagDefinitionRepository.save(bagDefinition).getId();
         // Find and return the newly created BagDefinitionView
-        return bagDefinitionViewRepository.findById(bagDefinition.getId())
-                .orElseThrow(() -> new IllegalStateException("BagDefinitionView could not be created"));
+//        return bagDefinitionViewRepository.findById(bagDefinition.getId())
+//                .orElseThrow(() -> new IllegalStateException("BagDefinitionView could not be created"));
     }
 
-    public Optional<BagDefinitionView> updateBagDefinition(BagDefinitionView bagDefinitionView) {
+    public Optional<Long> updateBagDefinition(BagDefinitionView bagDefinitionView) {
         Optional<BagDefinition> optionalBagDefinition = bagDefinitionRepository.findById(bagDefinitionView.getBagDefinitionId());
 
         if (optionalBagDefinition.isPresent()) {
@@ -77,9 +79,9 @@ public class BagDefinitionService {
             existingBagDefinition.setStartDate(bagDefinitionView.getStartDate());
             existingBagDefinition.setEndDate(bagDefinitionView.getEndDate());
 
-            bagDefinitionRepository.save(existingBagDefinition);
+            return Optional.of(bagDefinitionRepository.save(existingBagDefinition).getId());
             // Return the updated BagDefinitionView
-            return bagDefinitionViewRepository.findById(bagDefinitionView.getBagDefinitionId());
+//            return bagDefinitionViewRepository.findById(bagDefinitionView.getBagDefinitionId());
         } else {
             return Optional.empty();
         }

@@ -1,6 +1,7 @@
 package org.example.datajdbc.service;
 
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.example.datajdbc.domain.Country;
 import org.example.datajdbc.domain.FlowNode;
@@ -27,6 +28,7 @@ public class FlowNodeService {
     private final SortRepository sortRepository;
 
     // Cache keyed by "country:slic:sort" (String keys for easy lookup)
+    @Getter
     private final Map<String, FlowNode> flowNodeCache = new ConcurrentHashMap<>();
 
     @Autowired
@@ -40,16 +42,13 @@ public class FlowNodeService {
     @PostConstruct
     // Load all FlowNodes into the cache on startup
     public void initialize() {
-        flowNodeRepository.findAll().forEach(this::addToCache);
-    }
-
-    // Adds a FlowNode to the cache with a "country:slic:sort" key
-    private void addToCache(FlowNode flowNode) {
-        Country cc = countryRepository.findById(flowNode.getCountryId()).orElseThrow(() -> new IllegalArgumentException("Country not found"));
-        Slic slic = slicRepository.findById(flowNode.getSlicId()).orElseThrow(() -> new IllegalArgumentException("Slic not found"));
-        Sort sort = sortRepository.findById(flowNode.getSortId()).orElseThrow(() -> new IllegalArgumentException("Sort not found"));
-        String key = generateCacheKey(cc.getCc(), slic.getSlic(), sort.getSort());
-        flowNodeCache.put(key, flowNode);
+        flowNodeRepository.findAll().forEach(flowNode->{
+            Country cc = countryRepository.findById(flowNode.getCountryId()).orElseThrow(() -> new IllegalArgumentException("Country not found"));
+            Slic slic = slicRepository.findById(flowNode.getSlicId()).orElseThrow(() -> new IllegalArgumentException("Slic not found"));
+            Sort sort = sortRepository.findById(flowNode.getSortId()).orElseThrow(() -> new IllegalArgumentException("Sort not found"));
+            String key = generateCacheKey(cc.getCc(), slic.getSlic(), sort.getSort());
+            flowNodeCache.put(key, flowNode);
+        });
     }
 
 
@@ -71,8 +70,7 @@ public class FlowNodeService {
         flowNode = new FlowNode(null, countryId, slicId, sortId);
         flowNode = flowNodeRepository.save(flowNode);
 
-        // Add the newly created FlowNode to the cache
-        addToCache(flowNode);
+        flowNodeCache.put(key, flowNode);
 
         log.warn("Created new FlowNode with key: {}", key);
 
@@ -84,7 +82,4 @@ public class FlowNodeService {
         return country + ":" + StringUtils.rightPad(StringUtils.trim(slic), 5) + ":" + sort;
     }
 
-    public Map<String, FlowNode> getFlowNodeCache() {
-        return flowNodeCache;
-    }
 }

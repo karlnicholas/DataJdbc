@@ -2,23 +2,24 @@ package org.example.datajdbc.api;
 
 import org.example.datajdbc.domain.BagDefinitionLegacy;
 import org.example.datajdbc.service.BagDefinitionLegacyService;
+import org.example.datajdbc.util.QueryExtractor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDate;
-
 @Component
 public class BagDefinitionLegacyHandler {
 
     private final BagDefinitionLegacyService bagDefinitionLegacyService;
+    private final QueryExtractor queryExtractor;
 
-    public BagDefinitionLegacyHandler(BagDefinitionLegacyService bagDefinitionLegacyService) {
+    public BagDefinitionLegacyHandler(BagDefinitionLegacyService bagDefinitionLegacyService, QueryExtractor queryExtractor) {
         this.bagDefinitionLegacyService = bagDefinitionLegacyService;
+        this.queryExtractor = queryExtractor;
     }
 
-    public Mono<ServerResponse> getAll(ServerRequest request) {
+    public Mono<ServerResponse> getAll(ServerRequest ignoredRequest) {
         return Mono.fromSupplier(bagDefinitionLegacyService::findAll)
                 .flatMap(bagDefinitions -> ServerResponse.ok().bodyValue(bagDefinitions));
     }
@@ -53,13 +54,7 @@ public class BagDefinitionLegacyHandler {
 
     public Mono<ServerResponse> getBagDefinitionsForOriginAndDateRange(ServerRequest request) {
         try {
-            String originCc = request.queryParam("originCc").orElseThrow(() -> new IllegalArgumentException("OriginCc is required"));
-            String originSlic = request.queryParam("originSlic").orElseThrow(() -> new IllegalArgumentException("OriginSlic is required"));
-            String originSort = request.queryParam("originSort").orElseThrow(() -> new IllegalArgumentException("OriginSort is required"));
-            LocalDate startDate = LocalDate.parse(request.queryParam("startDate").orElseThrow(() -> new IllegalArgumentException("Start date is required")));
-            LocalDate endDate = LocalDate.parse(request.queryParam("endDate").orElseThrow(() -> new IllegalArgumentException("End date is required")));
-
-            return Mono.fromSupplier(() -> bagDefinitionLegacyService.getBagDefinitionsForOriginAndDateRange(originCc, originSlic, originSort, startDate, endDate))
+            return Mono.fromSupplier(() -> queryExtractor.extractCcSlicSort(request, bagDefinitionLegacyService))
                     .flatMap(bagDefinitions -> ServerResponse.ok().bodyValue(bagDefinitions))
                     .switchIfEmpty(ServerResponse.noContent().build());
 

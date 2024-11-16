@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -45,9 +44,10 @@ class BagDefinitionServiceTest {
         LocalDate endDate = LocalDate.of(2024, 12, 31);
 
         BagDefinitionView bagDefinitionView = new BagDefinitionView(
-                1L, startDate, endDate,
+                1L,
                 originCc, originSlic, originSort,
-                "US", "9449", "L"
+                "US", "9449", "L",
+                startDate, endDate
         );
 
         when(bagDefinitionViewRepository.findByOriginAndDateRange(
@@ -79,18 +79,19 @@ class BagDefinitionServiceTest {
 
         FlowNode originFlowNode = new FlowNode(1L, null, null, null);
         FlowNode destinationFlowNode = new FlowNode(2L, null, null, null);
-
-        // Define expected BagDefinitionView
-        BagDefinitionView bagDefinitionView = new BagDefinitionView(
-                1L, startDate, endDate,
-                originCc, originSlic, originSort,
-                destinationCc, destinationSlic, destinationSort
-        );
+//
+//        // Define expected BagDefinitionView
+//        BagDefinitionView bagDefinitionView = new BagDefinitionView(
+//                1L,
+//                originCc, originSlic, originSort,
+//                destinationCc, destinationSlic, destinationSort,
+//                startDate, endDate
+//        );
 
         // Stubbing mocks for FlowNodeService
         when(flowNodeService.getOrCreateFlowNode(originCc, originSlic, originSort)).thenReturn(originFlowNode);
         when(flowNodeService.getOrCreateFlowNode(destinationCc, destinationSlic, destinationSort)).thenReturn(destinationFlowNode);
-        when(bagDefinitionViewRepository.findById(1L)).thenReturn(Optional.of(bagDefinitionView));
+//        when(bagDefinitionViewRepository.findById(1L)).thenReturn(Optional.of(bagDefinitionView));
 
         // Capture the BagDefinition passed to save() and set an ID manually
         ArgumentCaptor<BagDefinition> bagDefinitionCaptor = ArgumentCaptor.forClass(BagDefinition.class);
@@ -101,7 +102,7 @@ class BagDefinitionServiceTest {
         });
 
         // Act
-        BagDefinitionView result = bagDefinitionService.createBagDefinition(
+        Long id = bagDefinitionService.createBagDefinition(
                 BagDefinitionView.builder()
                         .originCc(originCc)
                         .originSlic(originSlic)
@@ -115,13 +116,13 @@ class BagDefinitionServiceTest {
         );
 
         // Assert
-        assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(bagDefinitionView);
+        assertThat(id).isNotNull();
+        assertThat(id).isEqualTo(1L);
 
         // Verify interactions
         verify(flowNodeService, times(1)).getOrCreateFlowNode(originCc, originSlic, originSort);
         verify(flowNodeService, times(1)).getOrCreateFlowNode(destinationCc, destinationSlic, destinationSort);
         verify(bagDefinitionRepository, times(1)).save(bagDefinitionCaptor.getValue());
-        verify(bagDefinitionViewRepository, times(1)).findById(1L);
+//        verify(bagDefinitionViewRepository, times(1)).findById(1L);
     }
 }

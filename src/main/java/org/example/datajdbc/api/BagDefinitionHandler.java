@@ -2,25 +2,25 @@ package org.example.datajdbc.api;
 
 import org.example.datajdbc.domain.BagDefinitionView;
 import org.example.datajdbc.service.BagDefinitionService;
+import org.example.datajdbc.util.QueryExtractor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDate;
-
 @Component
 public class BagDefinitionHandler {
 
     private final BagDefinitionService bagDefinitionService;
-
+    private final QueryExtractor queryExtractor;
     @Autowired
-    public BagDefinitionHandler(BagDefinitionService bagDefinitionService) {
+    public BagDefinitionHandler(BagDefinitionService bagDefinitionService, QueryExtractor queryExtractor) {
         this.bagDefinitionService = bagDefinitionService;
+        this.queryExtractor = queryExtractor;
     }
 
-    public Mono<ServerResponse> getAll(ServerRequest request) {
+    public Mono<ServerResponse> getAll(ServerRequest ignoredRequest) {
         return Mono.fromSupplier(bagDefinitionService::findAll)
                 .flatMap(bagDefinitions -> ServerResponse.ok().bodyValue(bagDefinitions));
     }
@@ -37,27 +37,20 @@ public class BagDefinitionHandler {
     public Mono<ServerResponse> create(ServerRequest request) {
         return request.bodyToMono(BagDefinitionView.class)
                 .flatMap(bagDefinitionView -> Mono.fromSupplier(() -> bagDefinitionService.createBagDefinition(bagDefinitionView)))
-                .flatMap(savedBagDefinitionView -> ServerResponse.ok().bodyValue(savedBagDefinitionView));
+                .flatMap(id -> ServerResponse.ok().bodyValue(id));
     }
 
     public Mono<ServerResponse> update(ServerRequest request) {
         return request.bodyToMono(BagDefinitionView.class)
                 .flatMap(bagDefinitionView -> Mono.fromSupplier(() -> bagDefinitionService.updateBagDefinition(bagDefinitionView)))
-                .flatMap(updatedBagDefinitionView -> updatedBagDefinitionView
-                        .map(view -> ServerResponse.ok().bodyValue(view))
-                        .orElseGet(() -> ServerResponse.notFound().build())
-                );
+                .flatMap(updated -> updated.isPresent()
+                        ? ServerResponse.ok().bodyValue(updated)
+                        : ServerResponse.notFound().build());
     }
 
     public Mono<ServerResponse> getBagDefinitionsForOriginAndDateRange(ServerRequest request) {
         try {
-            String originCc = request.queryParam("originCc").orElseThrow(() -> new IllegalArgumentException("OriginCc is required"));
-            String originSlic = request.queryParam("originSlic").orElseThrow(() -> new IllegalArgumentException("OriginSlic is required"));
-            String originSort = request.queryParam("originSort").orElseThrow(() -> new IllegalArgumentException("OriginSort is required"));
-            LocalDate startDate = LocalDate.parse(request.queryParam("startDate").orElseThrow(() -> new IllegalArgumentException("Start date is required")));
-            LocalDate endDate = LocalDate.parse(request.queryParam("endDate").orElseThrow(() -> new IllegalArgumentException("End date is required")));
-
-            return Mono.fromSupplier(() -> bagDefinitionService.getBagDefinitionsForOriginAndDateRange(originCc, originSlic, originSort, startDate, endDate))
+            return Mono.fromSupplier(() -> queryExtractor.extractCcSlicSort(request, bagDefinitionService))
                     .flatMap(bagDefinitions -> ServerResponse.ok().bodyValue(bagDefinitions))
                     .switchIfEmpty(ServerResponse.noContent().build());
 

@@ -50,14 +50,14 @@ public class BagDefinitionViewRepositoryImpl implements BagDefinitionViewReposit
         public BagDefinitionView mapRow(ResultSet rs, int rowNum) throws SQLException {
             return new BagDefinitionView(
                     rs.getLong("bagDefinitionId"),
-                    rs.getDate("startDate").toLocalDate(),
-                    rs.getDate("endDate").toLocalDate(),
                     rs.getString("originCc"),
                     rs.getString("originSlic"),
                     rs.getString("originSort"),
                     rs.getString("destinationCc"),
                     rs.getString("destinationSlic"),
-                    rs.getString("destinationSort")
+                    rs.getString("destinationSort"),
+                    rs.getDate("startDate").toLocalDate(),
+                    rs.getDate("endDate").toLocalDate()
             );
         }
     }

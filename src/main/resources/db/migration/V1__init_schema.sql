@@ -40,3 +40,26 @@ CREATE TABLE BAGDEFINITION (
                                FOREIGN KEY (originId) REFERENCES FLOWNODE(id),
                                FOREIGN KEY (destinationId) REFERENCES FLOWNODE(id)
 );
+
+-- Add unique constraint on originId, destinationId, startDate, and endDate
+ALTER TABLE BAGDEFINITION
+    ADD CONSTRAINT UQ_BAGDEFINITION_OriginDestDates
+        UNIQUE (originId, destinationId, startDate, endDate);
+
+-- BAGDEFINITION table creation
+CREATE TABLE BAGDEFINITIONLEGACY (
+                                     id BIGINT IDENTITY PRIMARY KEY,                -- Primary key for BagDefinition
+                                     originCc CHAR(2) NOT NULL,
+                                     originSlic CHAR(5) NOT NULL,
+                                     originSort CHAR(1) NOT NULL,
+                                     destinationCc CHAR(2) NOT NULL,
+                                     destinationSlic CHAR(5) NOT NULL,
+                                     destinationSort CHAR(1) NOT NULL,
+                                     startDate DATE NOT NULL,
+                                     endDate DATE NOT NULL
+);
+
+-- Add unique constraint on all fields except id
+ALTER TABLE BAGDEFINITIONLEGACY
+    ADD CONSTRAINT UQ_BAGDEFINITIONLEGACY_UniqueFields
+        UNIQUE (originCc, originSlic, originSort, destinationCc, destinationSlic, destinationSort, startDate, endDate);
